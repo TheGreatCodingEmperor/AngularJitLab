@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import '@angular/compiler';
-import { ChangeDetectionStrategy, Component, Input, NgModule, OnInit, Type, TypeDecorator, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, NgModule, OnInit, Type, TypeDecorator, ViewContainerRef } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import * as _ from 'lodash';
 import { MegaMenu } from 'primeng/megamenu';
@@ -25,12 +25,13 @@ export class CompileHomeComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    let NewEventEmitter = () => { return new EventEmitter<SafeAny>() };
     let file = `
     <ngx-component>
     <ngx-selector>compile-main</ngx-selector>
     <ngx-inputs></ngx-inputs>
     <ngx-outputs></ngx-outputs>
-    <ngx-html><p class="bg-rr">123</p> <compile-com1 [(bankName)]="context.abc"></compile-com1></ngx-html>
+    <ngx-html><p class="bg-rr">123</p> <compile-com1 [bankName]="abc" (bankNameChange)="show()"  (valueChange)="abc=$event"></compile-com1></ngx-html>
     <ngx-style>.bg-rr{background:red}</ngx-style>
     <ngx-script>(class context{abc=1;show(){alert('show!')}})</ngx-script>
     </ngx-component>
@@ -38,10 +39,10 @@ export class CompileHomeComponent implements OnInit {
     <ngx-component>
     <ngx-selector>compile-com1</ngx-selector>
     <ngx-inputs>['bankName']</ngx-inputs>
-    <ngx-outputs></ngx-outputs>
-    <ngx-html><p-card><p class="bg-gg">{{bankName}}</p></p-card></ngx-html>
+    <ngx-outputs>['bankNameChange','valueChange']</ngx-outputs>
+    <ngx-html><p-card (click)="change()"><p class="bg-gg">{{bankName}}</p><input (input)="value($event)"/></p-card></ngx-html>
     <ngx-style>.bg-gg{background:gray}</ngx-style>
-    <ngx-script>(class context{abc=1;show(){alert('show!')}})</ngx-script>
+    <ngx-script>(class context{abc=1;bankNameChange =NewEventEmitter();valueChange = NewEventEmitter();change(){this.bankNameChange.emit(123);}value(event){this.valueChange.emit(event.target.value)}})</ngx-script>
     </ngx-component>
     `;
     let compReg = new RegExp(/<ngx-component>[\s\S]*?<\/ngx-component>/, 'g');
@@ -53,7 +54,7 @@ export class CompileHomeComponent implements OnInit {
     let scriptReg = new RegExp(/<ngx-script>[\s\S]*?<\/ngx-script>/, 'i');
     let components = file.match(compReg);
     let componentArr = [];
-    for(let component of components){
+    for (let component of components) {
       let selector = component.match(selectorReg)[0]?.replace(`<ngx-selector>`, '').replace(`<\/ngx-selector>`, '');
       let inputs = component.match(inputsReg)[0]?.replace(`<ngx-inputs>`, '').replace(`<\/ngx-inputs>`, '');
       let outputs = component.match(outputsReg)[0]?.replace(`<ngx-outputs>`, '').replace(`<\/ngx-outputs>`, '');
@@ -61,7 +62,7 @@ export class CompileHomeComponent implements OnInit {
       let style = component.match(styleReg)[0]?.replace(`<ngx-style>`, '').replace(`<\/ngx-style>`, '');
       let script = component.match(scriptReg)[0]?.replace(`<ngx-script>`, '').replace(`<\/ngx-script>`, '');
       console.log(selector)
-      let component1 = this.createComponentType(selector,html, [style], new(eval(script)),eval(inputs));
+      let component1 = this.createComponentType(selector, html, [style], eval(script), eval(inputs), eval(outputs));
       componentArr = componentArr.concat(component1);
     }
     // let component1Raw = {
@@ -82,22 +83,29 @@ export class CompileHomeComponent implements OnInit {
   }
 
   private createComponentType(
-    selector:string,
+    selector: string,
     html: string,
     styles: string[],
     context: SafeAny,
-    input: string[]
+    inputs: string[],
+    outputs: string[]
   ): Type<SafeAny> {
     const metadata: Component = {};
     metadata.selector = selector;
     metadata.template = html;
     metadata.styles = [...styles];
     metadata.changeDetection = ChangeDetectionStrategy.Default;
-    metadata.inputs = input;
+    metadata.inputs = inputs;
+    metadata.outputs = outputs;
 
-    const componentType = class AdhocComponent {
-      context: SafeAny = context;
-    };
+    // const componentType = class AdhocComponent {
+    //   context: SafeAny = context;
+    //   ngOnInit(){
+    //     console.log('begin')
+    //   }
+    // };
+
+    const componentType = context;
     const componentTypeCreator: TypeDecorator = Component(metadata);
     // noinspection UnnecessaryLocalVariableJS
     const decoratedComponentType = componentTypeCreator(componentType);
