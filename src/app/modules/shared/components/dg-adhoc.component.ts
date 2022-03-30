@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import '@angular/compiler';
 import {
   ChangeDetectionStrategy,
@@ -6,6 +7,7 @@ import {
   Component,
   ComponentRef,
   createNgModuleRef,
+  Injectable,
   Input,
   ModuleWithProviders,
   NgModule,
@@ -21,6 +23,7 @@ import {
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeScript } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 
@@ -33,6 +36,8 @@ export class DgAdhocComponent implements OnChanges, OnInit, OnDestroy {
   constructor(
     private vcr: ViewContainerRef,
     private renderer: Renderer2,
+    private route:ActivatedRoute,
+    private http:HttpClient
   ) {
   }
 
@@ -100,6 +105,7 @@ export class DgAdhocComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   update() {
+    console.log(this.html);
     this.vcr.clear();
     const script = this.renderer.createElement("script");
     this.renderer.setProperty(

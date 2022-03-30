@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "jig-build": "ng build --prod --buildOptimizer=false",
     "watch": "ng build --watch --configuration development"
   },
   "private": true,
@@ -18,14 +19,15 @@
     "@angular/platform-browser": "~13.1.0",
     "@angular/platform-browser-dynamic": "~13.1.0",
     "@angular/router": "~13.1.0",
+    "d3": "^6.3.1",
     "lodash": "^4.17.21",
     "p3x-angular-compile": "^2022.4.114",
     "primeicons": "^5.0.0",
     "primeng": "^13.3.0",
+    "quill": "1.3.7",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.11.4",
-    "quill": "1.3.7"
+    "zone.js": "~0.11.4"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~13.1.2",
